@@ -1,9 +1,15 @@
 import { useGSAP } from '@gsap/react';
 import { SplitText } from 'gsap/all';
 import gsap from 'gsap';
-import React from 'react';
+import React, { useRef } from 'react';
+import { useMediaQuery } from 'react-responsive';
 
 const Hero = () => {
+
+const videoRef = useRef();
+const videoTimelineRef = useRef();
+const isMiobile = useMediaQuery({ maxWidth: 767})
+
     useGSAP(() => {
         const heroSplit = new SplitText('.title', { type: 'chars, words'});
         const paragraphSplit = new SplitText('.subtitle', { type: 'lines'});
@@ -39,6 +45,38 @@ scrub: true,
         .to('.left-leaf', {y: 200}, 0)
         .to('.left-leaf', { y: -200 }, 0)
 
+
+        const startValue = isMiobile ? 'top 50%' : 'center 60%';
+        const endValue = isMiobile ? '120% top' : 'bottom top';
+
+        // gsap.timeline({
+        //     scrollTrigger: {
+        //         trigger: '#hero',
+        //         start: startValue,
+        //         end: endValue,
+        //         scrub: true,
+        //     }
+        // })
+
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: 'video',
+                start: startValue,
+                scrub: true,
+                pin: true,
+                onEnter: () => videoRef.current.play(),
+                onEnterBack: () => videoRef.current.play(),
+                onLeave: () => videoRef.current.pause(),
+                onLeaveBack: () => videoRef.current.pause(),
+            }
+        })
+        videoRef.current.onloadedmetadata = () => {
+            tl.to(videoRef.current, {
+                currentTime: videoRef.current.duration
+            })
+        }
+
+
     }, []);
 
 
@@ -70,6 +108,16 @@ scrub: true,
             </div>
         </div>
     </section>
+
+    <div className='video absolute inset-0'>
+    <video
+        ref={videoRef}
+        src='/videos/output.mp4'
+        muted
+        playsInline
+        preload='auto'
+    />
+</div>
 
     </>
   )
